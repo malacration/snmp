@@ -1,17 +1,17 @@
-# Base Red Hat UBI 9 minimal - compatível com a policy “restricted” do OpenShift
-FROM registry.access.redhat.com/ubi9-minimal:latest
+# Base Ubuntu Server LTS minimal
+FROM ubuntu:22.04
+
+# Evita prompts interativos na instalação
+ENV DEBIAN_FRONTEND=noninteractive
 
 # Instala o cliente SNMP e utilitários básicos
-RUN microdnf install -y \
-        net-snmp-utils \
-        net-snmp \
-        iputils \
-        bash \
-    && microdnf clean all
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        snmp            \
+        snmpd           \
+        iputils-ping    \
+        bash &&         \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Cria um usuário não-root exigido pelos SCCs padrão
-RUN useradd -u 1001 snmp
-USER 1001
-
-# Mantém o contêiner vivo (você substitui por bash via oc rsh/exec)
-ENTRYPOINT ["/bin/bash", "-c", "sleep infinity"]
+# Mantém o contêiner vivo (substitua por bash via oc rsh/exec, se quiser)
+ENTRYPOINT ["bash", "-c", "sleep infinity"]
